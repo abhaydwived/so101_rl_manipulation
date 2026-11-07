@@ -114,7 +114,7 @@ class SO101ModelMapper:
 
 if __name__ == "__main__":
     import sys
-    model_path = "assets/so101/so101.xml"
+    model_path = "so101/so101.xml"
     if not os.path.exists(model_path):
         print(f"Error: {model_path} not found.")
         sys.exit(1)
@@ -122,3 +122,4 @@ if __name__ == "__main__":
     model = mujoco.MjModel.from_xml_path(model_path)
     mapper = SO101ModelMapper("configs/so101_config.yaml", model)
     print("SUCCESS: SO101ModelMapper successfully validated all 6 joints, actuators, and limits!")
+

@@ -22,7 +22,7 @@ from src.feetech_actuator import FeetechSTS3215ActuatorGroup
 
 
 def run_joint_sanity_sweep(
-    model_path="assets/so101/reach_scene.xml",
+    model_path="so101/reach_scene.xml",
     config_path="configs/so101_config.yaml",
     output_dir="reports/sanity_check",
     n_sweep_points=80,
@@ -184,3 +184,4 @@ def run_joint_sanity_sweep(
 
 if __name__ == "__main__":
     run_joint_sanity_sweep()
+

@@ -5,9 +5,9 @@
 
 robot:
   name: "so101"
-  model_path: "assets/so101/so101.xml"
-  reach_scene_path: "assets/so101/reach_scene.xml"
-  pick_scene_path: "assets/so101/pick_scene.xml"
+  model_path: "so101/so101.xml"
+  reach_scene_path: "so101/reach_scene.xml"
+  pick_scene_path: "so101/pick_scene.xml"
   dof: 6
   n_arm_joints: 5
   n_gripper_joints: 1
@@ -116,3 +116,4 @@ workspace:
     mass: 0.035                   # 35 grams (3D printed plastic)
   target_zone:
     radius: 0.04
+

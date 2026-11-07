@@ -1,0 +1,10 @@
+mujoco_menagerie/
+__pycache__/
+*.pyc
+mujoco_env/
+.vscode/
+models/
+logs/
+evaluation_results_fair_randomized/
+.envrc
+demo.gif

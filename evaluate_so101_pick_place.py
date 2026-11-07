@@ -45,6 +45,7 @@ def evaluate_so101_pick_place(
     n_episodes=200,
     seed=789,
     output_dir="reports/evaluation_pick_place",
+    render=False,
 ):
     os.makedirs(output_dir, exist_ok=True)
     rng = np.random.RandomState(seed)
@@ -53,10 +54,12 @@ def evaluate_so101_pick_place(
     print("STARTING HELD-OUT EVALUATION: PART B2 PICK AND PLACE TASK")
     print(f"Model: {model_path}")
     print(f"Held-Out Episodes: {n_episodes}")
+    print(f"Render Simulation: {render}")
     print(f"Success criteria: Cube <= 20.0 mm of target, released, and arm clear")
     print("==================================================================")
 
-    raw_env = SO101PickPlaceEnv(render_mode=None)
+    render_mode = "human" if render else None
+    raw_env = SO101PickPlaceEnv(render_mode=render_mode)
 
     has_model = os.path.exists(model_path)
     if has_model:
@@ -199,6 +202,7 @@ if __name__ == "__main__":
     parser.add_argument("--vecnorm", type=str, default="models/so101/pick_place/seed_42/so101_pick_place_vecnorm.pkl")
     parser.add_argument("--episodes", type=int, default=200)
     parser.add_argument("--seed", type=int, default=789)
+    parser.add_argument("--render", action="store_true", help="Render simulation during evaluation")
     args = parser.parse_args()
 
     evaluate_so101_pick_place(
@@ -206,5 +210,6 @@ if __name__ == "__main__":
         vecnorm_path=args.vecnorm,
         n_episodes=args.episodes,
         seed=args.seed,
+        render=args.render,
     )
 

@@ -39,6 +39,7 @@ def evaluate_so101_reach(
     n_targets=500,
     seed=123,
     output_dir="reports/evaluation_reach",
+    render=False,
 ):
     os.makedirs(output_dir, exist_ok=True)
     rng = np.random.RandomState(seed)
@@ -47,11 +48,13 @@ def evaluate_so101_reach(
     print("STARTING HELD-OUT EVALUATION: PART B1 REACHING TASK")
     print(f"Model: {model_path}")
     print(f"Evaluation Targets: {n_targets}")
+    print(f"Render Simulation: {render}")
     print(f"Success criteria: <= 10.0 mm distance held for >= 0.5 s")
     print("==================================================================")
 
-    # 1. Instantiate base environment
-    raw_env = SO101ReachEnv(render_mode=None)
+    # 1. Instantiate base environment with render_mode
+    render_mode = "human" if render else None
+    raw_env = SO101ReachEnv(render_mode=render_mode)
 
     # 2. Check if trained model exists, otherwise run evaluation policy
     has_model = os.path.exists(model_path)
@@ -195,6 +198,7 @@ if __name__ == "__main__":
     parser.add_argument("--vecnorm", type=str, default="models/so101/reach/seed_42/so101_reach_vecnorm.pkl")
     parser.add_argument("--targets", type=int, default=500)
     parser.add_argument("--seed", type=int, default=123)
+    parser.add_argument("--render", action="store_true", help="Render simulation during evaluation")
     args = parser.parse_args()
 
     evaluate_so101_reach(
@@ -202,5 +206,6 @@ if __name__ == "__main__":
         vecnorm_path=args.vecnorm,
         n_targets=args.targets,
         seed=args.seed,
+        render=args.render,
     )
 

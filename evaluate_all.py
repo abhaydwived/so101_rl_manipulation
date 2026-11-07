@@ -25,7 +25,7 @@ from evaluate_so101_reach import evaluate_so101_reach
 from evaluate_so101_pick_place import evaluate_so101_pick_place
 
 
-def run_all_evaluations():
+def run_all_evaluations(render=False):
     print("##################################################################")
     print("   MUKS ROBOTICS SO-101 RL TAKE-HOME: COMPLETE EVALUATION SUITE   ")
     print("##################################################################\n")
@@ -45,6 +45,7 @@ def run_all_evaluations():
         vecnorm_path="models/so101/reach/seed_42/so101_reach_vecnorm.pkl",
         n_targets=500,
         output_dir="reports/evaluation_reach",
+        render=render,
     )
 
     # Step 3: Part B2 200 Episodes Pick and Place Evaluation
@@ -54,6 +55,7 @@ def run_all_evaluations():
         vecnorm_path="models/so101/pick_place/seed_42/so101_pick_place_vecnorm.pkl",
         n_episodes=200,
         output_dir="reports/evaluation_pick_place",
+        render=render,
     )
 
     print("\n##################################################################")
@@ -66,5 +68,9 @@ def run_all_evaluations():
 
 
 if __name__ == "__main__":
-    run_all_evaluations()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--render", action="store_true", help="Render simulation live in MuJoCo viewer during evaluation")
+    args = parser.parse_args()
+
+    run_all_evaluations(render=args.render)
 

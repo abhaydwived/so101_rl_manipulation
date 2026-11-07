@@ -14,6 +14,10 @@ Satisfies all official assignment requirements:
 
 import os
 import sys
+
+# Prevent Windows EPERM permission conflict with corrupted .keras/keras.json
+sys.modules["tensorflow"] = None
+
 import csv
 import argparse
 from pathlib import Path

@@ -10,6 +10,10 @@ Runs:
 
 import os
 import sys
+
+# Prevent Windows EPERM permission conflict with corrupted .keras/keras.json
+sys.modules["tensorflow"] = None
+
 import argparse
 from pathlib import Path
 

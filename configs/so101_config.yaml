@@ -1,0 +1,118 @@
+# ==============================================================================
+# Centralized Robot Configuration for SO-101 (The Robot Studio / LeRobot)
+# Standard Open Arm 100/101 with Feetech STS3215 Serial Bus Servos
+# ==============================================================================
+
+robot:
+  name: "so101"
+  model_path: "assets/so101/so101.xml"
+  reach_scene_path: "assets/so101/reach_scene.xml"
+  pick_scene_path: "assets/so101/pick_scene.xml"
+  dof: 6
+  n_arm_joints: 5
+  n_gripper_joints: 1
+
+simulation:
+  physics_timestep: 0.002        # 500 Hz MuJoCo physics
+  policy_control_frequency: 25.0  # 25 Hz RL policy frequency
+  control_substeps: 20           # 20 physics steps per policy step (0.002 * 20 = 0.04s)
+
+joints:
+  names:
+    - "shoulder_pan"
+    - "shoulder_lift"
+    - "elbow_flex"
+    - "wrist_flex"
+    - "wrist_roll"
+    - "gripper"
+  indices:
+    shoulder_pan: 0
+    shoulder_lift: 1
+    elbow_flex: 2
+    wrist_flex: 3
+    wrist_roll: 4
+    gripper: 5
+  arm_indices: [0, 1, 2, 3, 4]
+  gripper_index: 5
+  types:
+    - "hinge"
+    - "hinge"
+    - "hinge"
+    - "hinge"
+    - "hinge"
+    - "hinge"
+  limits:
+    # Range in radians
+    shoulder_pan: [-1.91986, 1.91986]    # ~ -110 deg to +110 deg
+    shoulder_lift: [-1.74533, 1.74533]   # ~ -100 deg to +100 deg
+    elbow_flex: [-1.69000, 1.69000]      # ~ -96.8 deg to +96.8 deg
+    wrist_flex: [-1.65806, 1.65806]      # ~ -95 deg to +95 deg
+    wrist_roll: [-2.74385, 2.84121]      # ~ -157 deg to +162.8 deg
+    gripper: [-0.17453, 1.74533]         # -10 deg (fully closed) to 100 deg (fully open)
+
+home_qpos:
+  arm: [0.0, 0.40, -0.60, 0.20, 0.0]
+  gripper: 0.80   # open state
+  full: [0.0, 0.40, -0.60, 0.20, 0.0, 0.80]
+
+actuators:
+  names:
+    - "shoulder_pan"
+    - "shoulder_lift"
+    - "elbow_flex"
+    - "wrist_flex"
+    - "wrist_roll"
+    - "gripper"
+  indices:
+    shoulder_pan: 0
+    shoulder_lift: 1
+    elbow_flex: 2
+    wrist_flex: 3
+    wrist_roll: 4
+    gripper: 5
+  type: "position"
+  # Feetech STS3215 specifications
+  feetech_sts3215:
+    voltage_nominal: 7.4        # Volts
+    stall_torque_nm: 2.94       # 30 kg.cm at 7.4V
+    max_torque_nm: 3.50         # rated peak at 8.4V
+    continuous_torque_nm: 1.50  # thermal continuous limit
+    no_load_speed_rad_s: 5.80   # 0.18s / 60 deg -> ~55 rpm
+    position_kp: 250.0          # MuJoCo position actuator Kp
+    position_kv: 12.0           # MuJoCo position actuator damping Kv
+  force_ranges:
+    shoulder_pan: [-2.94, 2.94]
+    shoulder_lift: [-2.94, 2.94]
+    elbow_flex: [-2.94, 2.94]
+    wrist_flex: [-2.94, 2.94]
+    wrist_roll: [-2.94, 2.94]
+    gripper: [-2.94, 2.94]
+
+frames:
+  base_body: "base"
+  end_effector_site: "gripperframe"
+  ee_center_site: "ee_center"
+  moving_jaw_body: "moving_jaw_so101_v1"
+  gripper_body: "gripper"
+
+gripper:
+  closed_qpos: -0.10     # firmly clamped on cube
+  open_qpos: 1.00        # wide open
+  action_closed: 1.0     # normalized policy action > 0 means close
+  action_open: -1.0      # normalized policy action < 0 means open
+  contact_geoms_fixed: ["fixed_jaw_base", "fixed_jaw_mid", "fixed_jaw_tip"]
+  contact_geoms_moving: ["moving_jaw_base", "moving_jaw_mid", "moving_jaw_tip"]
+
+workspace:
+  reaching:
+    x_range: [0.15, 0.35]
+    y_range: [-0.20, 0.20]
+    z_range: [0.08, 0.28]
+  table:
+    pos: [0.25, 0.0, -0.05]
+    size: [0.35, 0.40, 0.05]
+  cube:
+    size: [0.015, 0.015, 0.015]   # 3 cm edge cube (0.015m half-size)
+    mass: 0.035                   # 35 grams (3D printed plastic)
+  target_zone:
+    radius: 0.04

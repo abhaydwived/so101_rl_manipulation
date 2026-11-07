@@ -30,7 +30,7 @@ class SO101ReachingEnv(SO101BaseEnv):
         scene_path: str = "so101/reach_scene.xml",
         config_path: str = "configs/so101_config.yaml",
         render_mode: str = None,
-        max_episode_steps: int = 120,   # ~4.8 seconds per episode
+        max_episode_steps: int = 200,   # 8.0 seconds at 25 Hz allows steady approach + 0.5s hold + margin
         control_substeps: int = 20,     # 25 Hz policy control frequency
         success_dist: float = 0.010,    # 1 cm requirement
         hold_time_sec: float = 0.50,    # 0.5 second hold requirement
@@ -41,7 +41,7 @@ class SO101ReachingEnv(SO101BaseEnv):
             render_mode=render_mode,
             max_episode_steps=max_episode_steps,
             control_substeps=control_substeps,
-            max_arm_delta=0.035,
+            max_arm_delta=0.035,        # 0.035 rad (~2.0 deg) provides optimal speed to reach in ~2.5s and settle
         )
 
         self.success_dist = success_dist
@@ -148,15 +148,33 @@ class SO101ReachingEnv(SO101BaseEnv):
 
         success = self.consecutive_hold_steps >= self.required_hold_steps
 
-        # Reward shaping
-        progress = (self.prev_dist - dist) * 15.0
-        dense_near = float(np.exp(-25.0 * dist))
-        hold_reward = 0.5 * float(self.consecutive_hold_steps)
+        # -------------------------------------------------------------
+        # Re-engineered Stable & Steady Reward Design:
+        # 1. Linear distance penalty: -10 * dist (dense, non-saturating gradient everywhere)
+        # 2. Continuous progress reward: 25 * (prev_dist - dist)
+        # 3. Precision zone shaping: 5.0 / (1.0 + 100.0 * dist)
+        # 4. Success holding bonus: +5.0 per step within 1 cm
+        # 5. Settling damping: penalize velocity only when close to prevent overshoot
+        # 6. Action smoothness penalty: -0.02 * ||a_t - a_{t-1}||^2
+        # 7. Terminal success bonus: +150.0
+        # -------------------------------------------------------------
+        dist_penalty = -10.0 * dist
+        progress = (self.prev_dist - dist) * 25.0
+        precision_bonus = 5.0 / (1.0 + 100.0 * dist)
+
+        # Holding bonus scaled by step count within 1 cm
+        hold_reward = 5.0 * float(self.consecutive_hold_steps) if in_tolerance else 0.0
+
+        # Gentle speed damping when within 3 cm to settle into hold
+        arm_v_norm = float(np.linalg.norm(self.get_arm_qvel()))
+        speed_penalty = -0.05 * arm_v_norm if dist < 0.030 else 0.0
+
+        # Action smoothness penalty
         smoothness_penalty = -0.02 * float(np.sum((action - self.prev_action) ** 2))
 
-        reward = progress + dense_near + hold_reward + smoothness_penalty
+        reward = dist_penalty + progress + precision_bonus + hold_reward + speed_penalty + smoothness_penalty
         if success:
-            reward += 100.0
+            reward += 150.0
 
         self.prev_dist = dist
         self.prev_action = action.copy()
@@ -177,3 +195,4 @@ class SO101ReachingEnv(SO101BaseEnv):
             self.render()
 
         return self._get_obs(), float(reward), terminated, truncated, info
+

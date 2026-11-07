@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
-from so101_reach_env import SO101ReachEnv
+from environments.reaching_env import SO101ReachingEnv
 
 
 def evaluate_so101_reach(
@@ -54,7 +54,7 @@ def evaluate_so101_reach(
 
     # 1. Instantiate base environment with render_mode
     render_mode = "human" if render else None
-    raw_env = SO101ReachEnv(render_mode=render_mode)
+    raw_env = SO101ReachingEnv(render_mode=render_mode)
 
     # 2. Check if trained model exists, otherwise run evaluation policy
     has_model = os.path.exists(model_path)

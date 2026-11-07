@@ -142,3 +142,4 @@ class SO101BaseEnv(gym.Env):
         if self.viewer is not None:
             self.viewer.close()
             self.viewer = None
+

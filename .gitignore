@@ -16,7 +16,8 @@ venv/
 .venv/
 env/
 ENV/
-
+.zip
+.pkl
 # IDE & Editors
 .vscode/
 .idea/

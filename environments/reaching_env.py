@@ -1,80 +1,203 @@
-import numpy as np
-import mujoco
+import os
+import sys
+import time
+import gymnasium as gym
 from gymnasium import spaces
-from environments.base_env import SO101BaseEnv
+import mujoco
+import numpy as np
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from src.common import configure_env
+configure_env()
+
+from src.so101_model_mapper import SO101ModelMapper
+from src.feetech_actuator import FeetechSTS3215ActuatorGroup
 
 
-class SO101ReachingEnv(SO101BaseEnv):
+class SO101ReachingEnv(gym.Env):
     """
-    Part B1: Required Reaching Task Environment for SO-101 Manipulator.
+    Unified Goal-Conditioned Reaching Environment for the SO-101 Manipulator.
 
-    Observation Space (21-D continuous):
-    - 5 arm joint positions (quantized to 12-bit magnetic encoder resolution)
-    - 5 arm joint velocities
-    - 3 end-effector 3D position
-    - 3 target 3D position
-    - 3 relative vector (target - end_effector)
-    - 1 Euclidean distance to target
-    - 1 hold progress ratio (consecutive_hold_steps / required_hold_steps)
-
-    Action Space (5-D continuous):
-    - 5 normalized arm joint position deltas in [-1, 1], scaled by max_arm_delta.
-
-    Success Condition:
-    - End-effector within 1 cm (0.01 m) of the random target.
-    - Maintained for at least 0.5 seconds (13 consecutive policy steps at 25 Hz).
+    Includes full low-level MuJoCo model management and Feetech STS3215 actuator dynamics:
+    - 3-Zone Target Randomization:
+        1. Bottom (near ground/table plane): Z in [0.015, 0.065] m
+        2. Medium height:                   Z in [0.075, 0.180] m
+        3. High height (overhead reach):    Z in [0.190, 0.320] m
+    - Diverse & Natural Starting Pose Randomization:
+        Picks from 5 distinct realistic arm archetypes (center ready, left-angled,
+        right-angled, compact rest, elevated) with continuous joint jitter.
+    - Stable Vibration-Free Reward Function:
+        Smooth exponential precision gradient, near-target velocity damping,
+        monotonic in-tolerance hold progression, zero-action reward, slip penalty,
+        and action smoothness regulation.
+    - Success Condition:
+        End-effector within 1 cm (0.01 m) of the 3D target, held stably
+        for at least 0.5 seconds (13 consecutive policy steps at 25 Hz).
     """
+
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 25}
 
     def __init__(
         self,
         scene_path: str = "so101/reach_scene.xml",
         config_path: str = "configs/so101_config.yaml",
         render_mode: str = None,
-        max_episode_steps: int = 200,   # 8.0 seconds at 25 Hz allows steady approach + 0.5s hold + margin
+        max_episode_steps: int = 350,   # 14.0 s at 25 Hz policy rate
         control_substeps: int = 20,     # 25 Hz policy control frequency
         success_dist: float = 0.010,    # 1 cm requirement
         hold_time_sec: float = 0.50,    # 0.5 second hold requirement
+        randomize_init_pose: bool = True,
     ):
-        super().__init__(
-            scene_path=scene_path,
-            config_path=config_path,
-            render_mode=render_mode,
-            max_episode_steps=max_episode_steps,
-            control_substeps=control_substeps,
-            max_arm_delta=0.035,        # 0.035 rad (~2.0 deg) provides optimal speed to reach in ~2.5s and settle
-        )
-
+        super().__init__()
+        self.scene_path = scene_path
+        self.config_path = config_path
+        self.render_mode = render_mode
+        self.max_episode_steps = max_episode_steps
+        self.control_substeps = control_substeps
+        self.max_arm_delta = 0.030      # ~1.7 deg/step max change per policy step
         self.success_dist = success_dist
         self.required_hold_steps = int(np.ceil(hold_time_sec / (control_substeps * 0.002)))  # 13 steps
+        self.randomize_init_pose = randomize_init_pose
+
+        # Real-time pacing & rendering
+        self.realtime = False
+        self._last_render_time = None
+        self.renderer = None
+        self.viewer = None
+
+        if not os.path.exists(scene_path):
+            raise FileNotFoundError(f"MuJoCo scene XML not found: {scene_path}")
+
+        self.model = mujoco.MjModel.from_xml_path(scene_path)
+        self.data = mujoco.MjData(self.model)
+
+        # Validate joint and actuator ordering strictly against centralized config
+        self.mapper = SO101ModelMapper(config_path, self.model)
+
+        # Name-resolved MuJoCo indices (arm joints, gripper joint, actuators)
+        self.arm_joint_ids    = self.mapper.arm_joint_ids
+        self.gripper_joint_id = self.mapper.gripper_joint_id
+        self.arm_qpos_idx     = self.mapper.arm_qpos_indices
+        self.gripper_qpos_idx = self.mapper.gripper_qpos_index
+        self.robot_qpos_idx   = self.mapper.robot_qpos_indices
+        self.arm_dof_idx      = self.mapper.arm_dof_indices
+        self.gripper_dof_idx  = self.mapper.gripper_dof_index
+        self.robot_dof_idx    = self.mapper.robot_dof_indices
+        self.arm_act_idx      = self.mapper.arm_actuator_ids
+        self.gripper_act_idx  = self.mapper.gripper_actuator_id
+        self.robot_act_idx    = self.mapper.robot_actuator_ids
+
+        # Feetech STS3215 position actuators
+        self.actuators = FeetechSTS3215ActuatorGroup(
+            n_actuators=len(self.robot_act_idx),
+            kp=250.0,
+            kv=12.0,
+            max_torque=2.94,
+            max_velocity=5.50,
+            dt_physics=self.model.opt.timestep,
+        )
+
+        # Joint limits and references resolved by joint ID
+        self.arm_low, self.arm_high, self.gripper_low, self.gripper_high = (
+            self.mapper.get_joint_limits(self.model)
+        )
+
+        self.home_qpos = np.array(self.mapper.cfg["home_qpos"]["full"], dtype=np.float64)
+        self.current_target_qpos = self.home_qpos.copy()
+
+        # Site and frame IDs
+        ee_site_name = self.mapper.frames_cfg["end_effector_site"]
+        self.ee_site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, ee_site_name)
+        if self.ee_site_id < 0:
+            raise ValueError(f"Required site '{ee_site_name}' not found in model!")
 
         self.target_mocap_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "target")
         self.target_mocap_idx = self.model.body_mocapid[self.target_mocap_id]
 
-        # Workspace sampling boundaries
-        self.ws_x = [0.18, 0.36]
-        self.ws_y = [-0.20, 0.20]
-        self.ws_z = [0.08, 0.28]
+        # 3 Distinct Height Zones (all kinematically verified with 100% reachability)
+        self.zones = {
+            "bottom": {"x": [0.22, 0.34], "y": [-0.16, 0.16], "z": [0.015, 0.065]},  # near ground / plane
+            "medium": {"x": [0.22, 0.34], "y": [-0.16, 0.16], "z": [0.075, 0.180]},  # mid-altitude
+            "high":   {"x": [0.22, 0.32], "y": [-0.15, 0.15], "z": [0.190, 0.320]},  # overhead reaching
+        }
+        self.zone_names = ["bottom", "medium", "high"]
 
-        # Define 5-D Action Space
+        # 5-D Action Space: continuous position deltas for the 5 arm joints
         self.action_space = spaces.Box(
             low=-1.0, high=1.0, shape=(5,), dtype=np.float32
         )
 
-        # Define 21-D Observation Space
+        # 21-D Observation Space
+        # qpos(5) + qvel(5) + ee_pos(3) + target_pos(3) + ee_to_tgt(3) + dist(1) + hold_ratio(1)
         obs_dim = 5 + 5 + 3 + 3 + 3 + 1 + 1
         self.observation_space = spaces.Box(
             low=-10.0, high=10.0, shape=(obs_dim,), dtype=np.float32
         )
 
-        print(f"[SO101ReachingEnv] Initialized successfully.")
-        print(f"  -> Observation Space: Box{self.observation_space.shape} (21 dimensions)")
-        print(f"  -> Action Space:      Box{self.action_space.shape} (5 arm joint deltas)")
-        print(f"  -> Success Criteria:  <= {self.success_dist*100:.1f} cm held for >= {hold_time_sec} s ({self.required_hold_steps} steps)")
-
-        self.target_pos = np.array([0.25, 0.0, 0.15], dtype=np.float64)
+        self.target_pos = np.array([0.28, 0.0, 0.12], dtype=np.float64)
+        self.current_zone = "medium"
         self.consecutive_hold_steps = 0
         self.prev_dist = None
         self.prev_action = np.zeros(5, dtype=np.float32)
+        self.current_step = 0
+
+    # --------------------------- State Queries ---------------------------
+    def get_ee_xpos(self) -> np.ndarray:
+        """Returns the 3D Cartesian position of the end-effector site."""
+        return self.data.site_xpos[self.ee_site_id].copy()
+
+    def get_arm_qpos(self) -> np.ndarray:
+        """Returns the 5 arm joint positions quantized to 12-bit magnetic encoder resolution."""
+        return self.actuators.quantize_encoder(self.data.qpos[self.arm_qpos_idx].copy())
+
+    def get_arm_qvel(self) -> np.ndarray:
+        """Returns the 5 arm joint velocities."""
+        return self.data.qvel[self.arm_dof_idx].copy()
+
+    def get_gripper_qpos(self) -> float:
+        """Returns current gripper joint angle in radians."""
+        return float(self.data.qpos[self.gripper_qpos_idx])
+
+    def _physics_substep(self, n_substeps: int | None = None) -> None:
+        """
+        Integrates internal Feetech STS3215 actuator dynamics and advances MuJoCo physics.
+        Computes motor torques via Feetech actuator model and writes them to data.ctrl.
+        """
+        n = self.control_substeps if n_substeps is None else n_substeps
+        for _ in range(n):
+            torques, _ = self.actuators.step(
+                self.current_target_qpos,
+                self.data.qpos[self.robot_qpos_idx],
+                self.data.qvel[self.robot_dof_idx],
+            )
+            self.data.ctrl[self.robot_act_idx] = torques
+            mujoco.mj_step(self.model, self.data)
+
+    def apply_action(self, arm_action: np.ndarray, gripper_close: bool = False, speed_scale: float = 1.0):
+        """
+        Translates normalized policy action into Feetech STS3215 position commands
+        and integrates physics over control_substeps (25 Hz control frequency).
+        """
+        dq = np.clip(arm_action, -1.0, 1.0) * (self.max_arm_delta * float(speed_scale))
+        self.current_target_qpos[:5] = np.clip(
+            self.current_target_qpos[:5] + dq,
+            self.arm_low,
+            self.arm_high,
+        )
+
+        if gripper_close:
+            self.current_target_qpos[5] = self.mapper.gripper_cfg["closed_qpos"]
+        else:
+            self.current_target_qpos[5] = self.mapper.gripper_cfg["open_qpos"]
+
+        self._physics_substep()
+
+    def check_self_collisions(self) -> int:
+        """Returns the count of active collisions."""
+        return int(self.data.ncon)
 
     def _get_obs(self) -> np.ndarray:
         qpos = self.get_arm_qpos()
@@ -94,31 +217,60 @@ class SO101ReachingEnv(SO101BaseEnv):
             [hold_ratio],
         ]).astype(np.float32)
 
-        return np.clip(obs, -10.0, 10.0)
+        return np.clip(obs, self.observation_space.low, self.observation_space.high)
 
+    def _sample_target(self) -> np.ndarray:
+        zone = self.np_random.choice(self.zone_names)
+        self.current_zone = zone
+        bounds = self.zones[zone]
+
+        for _ in range(50):
+            x = float(self.np_random.uniform(bounds["x"][0], bounds["x"][1]))
+            y = float(self.np_random.uniform(bounds["y"][0], bounds["y"][1]))
+            z = float(self.np_random.uniform(bounds["z"][0], bounds["z"][1]))
+
+            r = np.hypot(x, y)
+            r3d = np.sqrt(x**2 + y**2 + z**2)
+            if 0.18 <= r <= 0.35 and r3d <= 0.38:
+                return np.array([x, y, z], dtype=np.float64)
+
+        return np.array([0.26, 0.0, bounds["z"][0] + 0.03], dtype=np.float64)
+
+    def _sample_initial_arm_pose(self) -> np.ndarray:
+        if not self.randomize_init_pose:
+            return self.home_qpos[:5].copy()
+
+        archetypes = [
+            np.array([ 0.00, -0.45,  0.70,  0.50,  0.00]),   # Standard centered ready
+            np.array([ 0.35, -0.30,  0.60,  0.45, -0.25]),   # Angled left
+            np.array([-0.35, -0.30,  0.60,  0.45,  0.25]),   # Angled right
+            np.array([ 0.00, -0.65,  0.95,  0.30,  0.00]),   # Compact tucked rest
+            np.array([ 0.00, -0.15,  0.40,  0.65,  0.00]),   # High-reach posture
+        ]
+        chosen = archetypes[self.np_random.integers(0, len(archetypes))]
+        jitter = self.np_random.uniform(-0.06, 0.06, size=5)
+        pose = chosen + jitter
+        return np.clip(pose, self.arm_low, self.arm_high)
+
+    # Gym API 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         mujoco.mj_resetData(self.model, self.data)
 
-        # Reset arm to canonical home configuration
-        self.data.qpos[:6] = self.home_qpos.copy()
-        self.data.qvel[:6] = 0.0
-        self.current_target_qpos = self.home_qpos.copy()
-        self.actuators.reset(self.home_qpos)
+        arm_pose = self._sample_initial_arm_pose()
+        self.data.qpos[self.arm_qpos_idx] = arm_pose
+        self.data.qpos[self.gripper_qpos_idx] = self.mapper.gripper_cfg["open_qpos"]
+        self.data.qvel[self.robot_dof_idx] = 0.0
 
-        # Sample randomized 3D target coordinates
-        if options and "target_pos" in options:
-            self.target_pos = np.asarray(options["target_pos"], dtype=np.float64)
-        else:
-            self.target_pos = np.array([
-                self.np_random.uniform(self.ws_x[0], self.ws_x[1]),
-                self.np_random.uniform(self.ws_y[0], self.ws_y[1]),
-                self.np_random.uniform(self.ws_z[0], self.ws_z[1]),
-            ], dtype=np.float64)
+        self.current_target_qpos[:5] = arm_pose.copy()
+        self.current_target_qpos[5] = self.mapper.gripper_cfg["open_qpos"]
 
-        # Update visual mocap target in MuJoCo
+        self.actuators.reset(self.current_target_qpos)
+
+        # Sample and set target mocap position
+        self.target_pos = self._sample_target()
         self.data.mocap_pos[self.target_mocap_idx] = self.target_pos.copy()
-        self.data.ctrl[:6] = self.home_qpos.copy()
+
         mujoco.mj_forward(self.model, self.data)
 
         self.current_step = 0
@@ -130,17 +282,35 @@ class SO101ReachingEnv(SO101BaseEnv):
 
     def step(self, action):
         action = np.asarray(action, dtype=np.float32).reshape(-1)
+        if action.shape != (5,):
+            raise ValueError(f"Expected action shape (5,), got {action.shape}")
         action = np.clip(action, -1.0, 1.0)
 
-        # Apply position-controlled action (gripper remains open)
-        self.apply_action(arm_action=action, gripper_close=False)
         self.current_step += 1
+
+        dist_before = float(np.linalg.norm(self.target_pos - self.get_ee_xpos()))
+
+        # Precision velocity scaling & goal stabilization:
+        # 1. Full transit speed at distance (> 4 cm).
+        # 2. Smooth deceleration approaching target (1 to 4 cm).
+        # 3. Inside goal tolerance (<= 1 cm): quadratic damping and action deadband to eliminate micro-jittering.
+        if dist_before <= self.success_dist:
+            speed_scale = float(np.clip((dist_before / self.success_dist) ** 2, 0.0, 0.20))
+            arm_action = np.where(np.abs(action) < 0.10, 0.0, action).astype(np.float32)
+        elif dist_before < 0.040:
+            speed_scale = float(np.clip(dist_before / 0.040, 0.20, 1.0))
+            arm_action = action
+        else:
+            speed_scale = 1.0
+            arm_action = action
+
+        self.apply_action(arm_action, gripper_close=False, speed_scale=speed_scale)
 
         ee_pos = self.get_ee_xpos()
         dist = float(np.linalg.norm(self.target_pos - ee_pos))
-
-        # Check Part B1 success condition
         in_tolerance = dist <= self.success_dist
+        was_in_tolerance = self.consecutive_hold_steps > 0
+
         if in_tolerance:
             self.consecutive_hold_steps += 1
         else:
@@ -148,33 +318,43 @@ class SO101ReachingEnv(SO101BaseEnv):
 
         success = self.consecutive_hold_steps >= self.required_hold_steps
 
-        # -------------------------------------------------------------
-        # Re-engineered Stable & Steady Reward Design:
-        # 1. Linear distance penalty: -10 * dist (dense, non-saturating gradient everywhere)
-        # 2. Continuous progress reward: 25 * (prev_dist - dist)
-        # 3. Precision zone shaping: 5.0 / (1.0 + 100.0 * dist)
-        # 4. Success holding bonus: +5.0 per step within 1 cm
-        # 5. Settling damping: penalize velocity only when close to prevent overshoot
-        # 6. Action smoothness penalty: -0.02 * ||a_t - a_{t-1}||^2
-        # 7. Terminal success bonus: +150.0
-        # -------------------------------------------------------------
-        dist_penalty = -10.0 * dist
-        progress = (self.prev_dist - dist) * 25.0
-        precision_bonus = 5.0 / (1.0 + 100.0 * dist)
+        # Reward Function
+        dist_reward = -8.0 * dist
+        progress = (self.prev_dist - dist) * 20.0
+        precision_bonus = 6.0 * float(np.exp(-dist / 0.025))
 
-        # Holding bonus scaled by step count within 1 cm
-        hold_reward = 5.0 * float(self.consecutive_hold_steps) if in_tolerance else 0.0
-
-        # Gentle speed damping when within 3 cm to settle into hold
         arm_v_norm = float(np.linalg.norm(self.get_arm_qvel()))
-        speed_penalty = -0.05 * arm_v_norm if dist < 0.030 else 0.0
 
-        # Action smoothness penalty
-        smoothness_penalty = -0.02 * float(np.sum((action - self.prev_action) ** 2))
+        if dist < 0.050:
+            vel_damping = -0.50 * (arm_v_norm ** 2) * max(0.0, 1.0 - (dist / 0.050))
+        else:
+            vel_damping = 0.0
 
-        reward = dist_penalty + progress + precision_bonus + hold_reward + speed_penalty + smoothness_penalty
+        if in_tolerance:
+            hold_ratio = float(self.consecutive_hold_steps) / float(self.required_hold_steps)
+            stillness = 12.0 / (1.0 + 60.0 * arm_v_norm)
+            hold_reward = 12.0 + 15.0 * hold_ratio + stillness
+            action_penalty = -1.0 * float(np.sum(action ** 2))
+        else:
+            hold_reward = 0.0
+            action_penalty = 0.0
+
+        slip_penalty = -5.0 if (was_in_tolerance and not in_tolerance and self.current_step > 1) else 0.0
+        smoothness_penalty = -0.04 * float(np.sum((action - self.prev_action) ** 2))
+
+        reward = (
+            dist_reward
+            + progress
+            + precision_bonus
+            + vel_damping
+            + hold_reward
+            + action_penalty
+            + slip_penalty
+            + smoothness_penalty
+        )
+
         if success:
-            reward += 150.0
+            reward += 300.0
 
         self.prev_dist = dist
         self.prev_action = action.copy()
@@ -187,6 +367,7 @@ class SO101ReachingEnv(SO101BaseEnv):
             "dist_mm": dist * 1000.0,
             "in_tolerance": in_tolerance,
             "hold_steps": self.consecutive_hold_steps,
+            "target_zone": self.current_zone,
             "action_delta": float(np.mean(np.abs(action - self.prev_action))),
             "current_step": self.current_step,
         }
@@ -196,3 +377,30 @@ class SO101ReachingEnv(SO101BaseEnv):
 
         return self._get_obs(), float(reward), terminated, truncated, info
 
+    def render(self):
+        if self.render_mode == "rgb_array":
+            if self.renderer is None:
+                self.renderer = mujoco.Renderer(self.model, height=480, width=640)
+            self.renderer.update_scene(self.data)
+            return self.renderer.render()
+        elif self.render_mode == "human":
+            if self.viewer is None:
+                import mujoco.viewer
+                self.viewer = mujoco.viewer.launch_passive(self.model, self.data)
+                self._last_render_time = time.perf_counter()
+            step_duration = self.control_substeps * self.model.opt.timestep  # 0.04 s at 25 Hz
+            if self._last_render_time is not None:
+                elapsed = time.perf_counter() - self._last_render_time
+                sleep_for = step_duration - elapsed
+                if sleep_for > 0:
+                    time.sleep(sleep_for)
+            self._last_render_time = time.perf_counter()
+            self.viewer.sync()
+
+    def close(self):
+        if self.viewer is not None:
+            self.viewer.close()
+            self.viewer = None
+        if self.renderer is not None:
+            self.renderer.close()
+            self.renderer = None

@@ -1,0 +1,19 @@
+{
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "total_timesteps": 2408448,
+  "timesteps_per_seed": 100000,
+  "n_envs": 4,
+  "seed_milestones": [
+    2203648,
+    2306048,
+    2408448
+  ],
+  "observation_dim": 26,
+  "action_dim": 6,
+  "final_model_path": "models/so101/pick_lift\\pick_lift_model.zip",
+  "vecnormalize_path": "models/so101/pick_lift\\vecnormalize.pkl"
+}

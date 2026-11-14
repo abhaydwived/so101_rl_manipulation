@@ -1,0 +1,18 @@
+Category,Metric,Mean,Std,Unit
+Task,Success Rate,100.0,0.0,%
+Task,Lift Target Rate,100.0,0.0,%
+Task,Grasp Rate,100.0,0.0,%
+Task,Max Lift Height,8.564487689671243,0.4126088658412978,cm
+Task,Hold Duration,1.0,0.0,s
+Task,Action Smoothness,0.14627694941163594,0.018409063948808608,delta
+Task,Episodic Return,73.99138971808134,1.8624180841572484,reward
+Cube Placement,X Position,0.27485,0.030759144981614805,m
+Cube Placement,Y Position,-0.011799999999999998,0.10380327547818516,m
+Cube Placement,Yaw Angle,-79.425,140.86274188017214,deg
+Reward,Reaching,1.1497716393543032,0.08199737002757072,reward
+Reward,Grasp,6.0,0.0,reward
+Reward,Lift Progress,1.208023090692167,0.014561895043832792,reward
+Reward,Lift Milestone,10.0,0.0,reward
+Reward,Holding,25.0,0.0,reward
+Reward,Failure Penalty,-19.366405406647182,1.7949803358781293,reward
+Reward,Success Bonus,50.0,0.0,reward

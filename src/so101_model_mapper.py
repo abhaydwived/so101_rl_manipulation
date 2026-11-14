@@ -29,19 +29,60 @@ class SO101ModelMapper:
         self.arm_joint_names = self.joint_names[:5]
         self.gripper_joint_name = self.joint_names[5]
 
+        # Explicit name-resolved MuJoCo indices (populated in validate_model / resolve_indices)
+        self.arm_joint_ids = np.arange(5, dtype=np.int32)
+        self.gripper_joint_id = 5
+        self.robot_joint_ids = np.arange(6, dtype=np.int32)
+        self.arm_qpos_indices = np.arange(5, dtype=np.int32)
+        self.gripper_qpos_index = 5
+        self.robot_qpos_indices = np.arange(6, dtype=np.int32)
+        self.arm_dof_indices = np.arange(5, dtype=np.int32)
+        self.gripper_dof_index = 5
+        self.robot_dof_indices = np.arange(6, dtype=np.int32)
+        self.arm_actuator_ids = np.arange(5, dtype=np.int32)
+        self.gripper_actuator_id = 5
+        self.robot_actuator_ids = np.arange(6, dtype=np.int32)
+
         if model is not None:
             self.validate_model(model)
+
+    def resolve_indices(self, model: mujoco.MjModel) -> None:
+        """Resolve joint, qpos, dof, and actuator indices explicitly by name."""
+        jnt_ids = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, n) for n in self.joint_names]
+        act_ids = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, n) for n in self.joint_names]
+        if any(j < 0 for j in jnt_ids):
+            missing = [n for n, j in zip(self.joint_names, jnt_ids) if j < 0]
+            raise ValueError(f"Missing joints in MuJoCo model: {missing}")
+        if any(a < 0 for a in act_ids):
+            missing = [n for n, a in zip(self.joint_names, act_ids) if a < 0]
+            raise ValueError(f"Missing actuators in MuJoCo model: {missing}")
+
+        self.robot_joint_ids = np.asarray(jnt_ids, dtype=np.int32)
+        self.arm_joint_ids = self.robot_joint_ids[:5]
+        self.gripper_joint_id = int(self.robot_joint_ids[5])
+
+        self.robot_qpos_indices = np.asarray([int(model.jnt_qposadr[j]) for j in jnt_ids], dtype=np.int32)
+        self.arm_qpos_indices = self.robot_qpos_indices[:5]
+        self.gripper_qpos_index = int(self.robot_qpos_indices[5])
+
+        self.robot_dof_indices = np.asarray([int(model.jnt_dofadr[j]) for j in jnt_ids], dtype=np.int32)
+        self.arm_dof_indices = self.robot_dof_indices[:5]
+        self.gripper_dof_index = int(self.robot_dof_indices[5])
+
+        self.robot_actuator_ids = np.asarray(act_ids, dtype=np.int32)
+        self.arm_actuator_ids = self.robot_actuator_ids[:5]
+        self.gripper_actuator_id = int(self.robot_actuator_ids[5])
 
     def validate_model(self, model: mujoco.MjModel):
         """
         Validates the loaded MuJoCo model against the configuration.
         Ensures joint and actuator ordering match exactly with zero assumptions.
         """
+        self.resolve_indices(model)
+
         # 1. Validate Joints
         for expected_idx, name in enumerate(self.joint_names):
-            jnt_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
-            if jnt_id < 0:
-                raise ValueError(f"Joint '{name}' not found in MuJoCo model!")
+            jnt_id = int(self.robot_joint_ids[expected_idx])
             if jnt_id != expected_idx:
                 raise ValueError(
                     f"Joint '{name}' ID mismatch: expected {expected_idx}, got {jnt_id}"
@@ -57,9 +98,7 @@ class SO101ModelMapper:
 
         # 2. Validate Actuators
         for expected_idx, name in enumerate(self.joint_names):
-            act_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, name)
-            if act_id < 0:
-                raise ValueError(f"Actuator '{name}' not found in MuJoCo model!")
+            act_id = int(self.robot_actuator_ids[expected_idx])
             if act_id != expected_idx:
                 raise ValueError(
                     f"Actuator '{name}' ID mismatch: expected {expected_idx}, got {act_id}"
@@ -82,11 +121,11 @@ class SO101ModelMapper:
         return True
 
     def get_joint_limits(self, model: mujoco.MjModel):
-        """Returns (low, high) arrays for arm joints and gripper."""
-        arm_low = model.jnt_range[:5, 0].copy()
-        arm_high = model.jnt_range[:5, 1].copy()
-        gripper_low = model.jnt_range[5, 0]
-        gripper_high = model.jnt_range[5, 1]
+        """Returns (low, high) arrays for arm joints and gripper using name-resolved IDs."""
+        arm_low = model.jnt_range[self.arm_joint_ids, 0].copy()
+        arm_high = model.jnt_range[self.arm_joint_ids, 1].copy()
+        gripper_low = float(model.jnt_range[self.gripper_joint_id, 0])
+        gripper_high = float(model.jnt_range[self.gripper_joint_id, 1])
         return arm_low, arm_high, gripper_low, gripper_high
 
     def action_to_control(self, action: np.ndarray, current_targets: np.ndarray, max_arm_delta=0.03):

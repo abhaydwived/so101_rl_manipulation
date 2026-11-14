@@ -1,10 +1,49 @@
-mujoco_menagerie/
+# Python byte-compiled / optimized files
 __pycache__/
-*.pyc
-mujoco_env/
+*.py[cod]
+*$py.class
+*.so
+
+# Caching and Testing
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE & Editors
 .vscode/
-models/
+.idea/
+*.swp
+*.swo
+
+# MuJoCo / Simulation local builds
+mujoco_menagerie/
+mujoco_env/
+
+# Training Logs & TensorBoard Event Files
 logs/
+*.tfevents.*
+
+# Temporary / OS files
+.DS_Store
+Thumbs.db
+*.bak
+tmp/
+tmp_keras/
+temp*
+scratch/
+
+# Legacy / Temp evaluation runs
 evaluation_results_fair_randomized/
+reports/*.avi
+
+# Environment variables
+.env
 .envrc
-demo.gif

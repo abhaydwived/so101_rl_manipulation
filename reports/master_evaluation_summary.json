@@ -1,0 +1,175 @@
+{
+  "timestamp": "2026-11-14 00:25:13",
+  "evaluation_episodes": 2,
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "part_a_sanity": {
+    "status": "PASSED",
+    "actuator_group": "Feetech STS3215",
+    "physics_rate": "500 Hz",
+    "policy_rate": "25 Hz (20 substeps)",
+    "report_dir": "reports\\sanity_check"
+  },
+  "part_b1_reach": {
+    "seeds_evaluated": [
+      42,
+      123,
+      456
+    ],
+    "episodes_per_seed": 2,
+    "overall_success_rate_pct": {
+      "mean": 33.333333333333336,
+      "std": 57.735026918962575
+    },
+    "overall_dist_error_mm": {
+      "mean": 12.185729252516253,
+      "std": 10.380059185436366
+    },
+    "mean_reach_time_s": {
+      "mean": 10.133333333333333,
+      "std": 6.697263122599658
+    },
+    "individual_seed_metrics": [
+      {
+        "seed": 42,
+        "n_episodes": 2,
+        "success_rate_pct": 0.0,
+        "mean_final_err_mm": 3.8967705345813197,
+        "std_final_err_mm": 3.124298297382254,
+        "mean_time_to_reach_s": 14.0,
+        "std_time_to_reach_s": 0.0,
+        "mean_return": 6818.356107425992,
+        "action_smoothness": 0.32881003485859506,
+        "bottom_zone_success_pct": 0.0,
+        "medium_zone_success_pct": 0.0,
+        "high_zone_success_pct": 0.0
+      },
+      {
+        "seed": 123,
+        "n_episodes": 2,
+        "success_rate_pct": 0.0,
+        "mean_final_err_mm": 23.827908340229847,
+        "std_final_err_mm": 10.511724487554728,
+        "mean_time_to_reach_s": 14.0,
+        "std_time_to_reach_s": 0.0,
+        "mean_return": 978.8977310173213,
+        "action_smoothness": 0.038928332988704954,
+        "bottom_zone_success_pct": 0.0,
+        "medium_zone_success_pct": 0.0,
+        "high_zone_success_pct": 0.0
+      },
+      {
+        "seed": 456,
+        "n_episodes": 2,
+        "success_rate_pct": 100.0,
+        "mean_final_err_mm": 8.832508882737592,
+        "std_final_err_mm": 0.15785174335524998,
+        "mean_time_to_reach_s": 2.4,
+        "std_time_to_reach_s": 1.5839191898578664,
+        "mean_return": 1162.9895232524723,
+        "action_smoothness": 0.18682565839580176,
+        "bottom_zone_success_pct": 100.0,
+        "medium_zone_success_pct": 0.0,
+        "high_zone_success_pct": 100.0
+      }
+    ],
+    "figure_path": "reports\\reach_multiseed\\reach_learning_curves.png"
+  },
+  "part_b2_pick_lift": {
+    "individual_seed_results": [
+      {
+        "seed": 42,
+        "n_episodes": 2,
+        "success_rate_pct": 0.0,
+        "lift_target_rate_pct": 0.0,
+        "grasp_rate_pct": 0.0,
+        "mean_lift_height_cm": 0.0,
+        "mean_hold_duration_s": 0.0,
+        "mean_return": -3.9935284265056907,
+        "action_smoothness": 0.17481524243732566,
+        "mean_reward_reaching": 3.548215047046793,
+        "mean_reward_grasp": 0.0,
+        "mean_reward_lift_progress": 0.0,
+        "mean_reward_lift_milestone": 0.0,
+        "mean_reward_holding": 0.0,
+        "mean_reward_failure_penalty": 0.0,
+        "mean_reward_success": 0.0,
+        "failure_reason_counts": {}
+      },
+      {
+        "seed": 123,
+        "n_episodes": 2,
+        "success_rate_pct": 0.0,
+        "lift_target_rate_pct": 0.0,
+        "grasp_rate_pct": 50.0,
+        "mean_lift_height_cm": 0.23023920023492514,
+        "mean_hold_duration_s": 0.0,
+        "mean_return": 4.135320148212486,
+        "action_smoothness": 0.09504521555949891,
+        "mean_reward_reaching": 1.7899123479836665,
+        "mean_reward_grasp": 6.0,
+        "mean_reward_lift_progress": -0.13603673932194804,
+        "mean_reward_lift_milestone": 0.0,
+        "mean_reward_holding": 0.0,
+        "mean_reward_failure_penalty": 0.0,
+        "mean_reward_success": 0.0,
+        "failure_reason_counts": {
+          "cube_dropped_after_grasp": 1
+        }
+      },
+      {
+        "seed": 456,
+        "n_episodes": 2,
+        "success_rate_pct": 0.0,
+        "lift_target_rate_pct": 0.0,
+        "grasp_rate_pct": 50.0,
+        "mean_lift_height_cm": 0.10995119804863189,
+        "mean_hold_duration_s": 0.0,
+        "mean_return": 6.447668687498663,
+        "action_smoothness": 0.07114545460149349,
+        "mean_reward_reaching": 1.7580682827402376,
+        "mean_reward_grasp": 6.0,
+        "mean_reward_lift_progress": -0.04765548750017723,
+        "mean_reward_lift_milestone": 0.0,
+        "mean_reward_holding": 0.0,
+        "mean_reward_failure_penalty": 0.0,
+        "mean_reward_success": 0.0,
+        "failure_reason_counts": {
+          "cube_dropped_after_grasp": 1
+        }
+      }
+    ],
+    "single_model_stats": null,
+    "multi_seed_aggregate": {
+      "success_rate_pct": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "lift_target_rate_pct": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "grasp_rate_pct": {
+        "mean": 33.333333333333336,
+        "std": 28.86751345948129
+      },
+      "mean_lift_height_cm": {
+        "mean": 0.11339679942785234,
+        "std": 0.1151582669974364
+      },
+      "mean_hold_duration_s": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "mean_return": {
+        "mean": 2.196486803068486,
+        "std": 5.4839725882388315
+      }
+    },
+    "figure_path": "reports\\pick_lift_multiseed\\pick_lift_learning_curves.png"
+  },
+  "total_runtime_seconds": 11.5899977684021
+}

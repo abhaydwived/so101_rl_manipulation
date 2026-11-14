@@ -1,0 +1,18 @@
+Category,Metric,Mean,Std,Unit
+Overall,Success Rate,100.0,0.0,%
+Overall,Mean Final Error,7.455176288138347,2.3471330343986225,mm
+Overall,Time-to-Reach,2.12,1.0128068807910904,s
+Overall,Action Smoothness (|Delta a|),0.18703747531426798,0.008736795705337563,delta
+Overall,Episodic Return,968.084627892985,490.61732321607155,reward
+Zone_Bottom,Success Rate,100.0,0.0,%
+Zone_Bottom,Final Error,8.455674248242193,1.027633015554395,mm
+Zone_Bottom,Time-to-Reach,2.4,1.335365118609888,s
+Zone_Bottom,Action Smoothness,0.18478074776215175,0.009166433495027049,delta
+Zone_Medium,Success Rate,100.0,0.0,%
+Zone_Medium,Final Error,6.4597844679035985,3.4325257822217474,mm
+Zone_Medium,Time-to-Reach,1.8800000000000001,0.6540132516496385,s
+Zone_Medium,Action Smoothness,0.1903990358682973,0.009583824375983695,delta
+Zone_High,Success Rate,100.0,0.0,%
+Zone_High,Final Error,6.434253768558105,0.0,mm
+Zone_High,Time-to-Reach,1.68,0.0,s
+Zone_High,Action Smoothness,0.18487487085873172,0.0,delta

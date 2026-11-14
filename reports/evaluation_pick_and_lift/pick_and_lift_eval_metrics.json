@@ -1,0 +1,90 @@
+{
+  "benchmark": "SO-101 Pick-and-Lift Held-Out Deterministic Evaluation",
+  "n_episodes": 2,
+  "base_seed": 50000,
+  "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\pick_lift_model.zip",
+  "vecnorm_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\vecnormalize.pkl",
+  "total_eval_wall_time_s": 0.263535737991333,
+  "cube_placement": {
+    "randomized": true,
+    "x": {
+      "mean": 0.27485,
+      "std": 0.030759144981614805,
+      "min": 0.2531,
+      "max": 0.2966
+    },
+    "y": {
+      "mean": -0.011799999999999998,
+      "std": 0.10380327547818516,
+      "min": -0.0852,
+      "max": 0.0616
+    },
+    "yaw_deg": {
+      "mean": -79.425,
+      "std": 140.86274188017214,
+      "min": -179.03,
+      "max": 20.18
+    }
+  },
+  "metrics": {
+    "success_rate_percent": {
+      "mean": 100.0,
+      "std": 0.0
+    },
+    "lift_target_rate_percent": {
+      "mean": 100.0,
+      "std": 0.0
+    },
+    "grasp_rate_percent": {
+      "mean": 100.0,
+      "std": 0.0
+    },
+    "max_lift_height_cm": {
+      "mean": 8.564487689671243,
+      "std": 0.4126088658412978
+    },
+    "max_hold_duration_s": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "action_smoothness": {
+      "mean": 0.14627694941163594,
+      "std": 0.018409063948808608
+    },
+    "episodic_return": {
+      "mean": 73.99138971808134,
+      "std": 1.8624180841572484
+    }
+  },
+  "decomposed_rewards": {
+    "reward_reaching": {
+      "mean": 1.1497716393543032,
+      "std": 0.08199737002757072
+    },
+    "reward_grasp": {
+      "mean": 6.0,
+      "std": 0.0
+    },
+    "reward_lift_progress": {
+      "mean": 1.208023090692167,
+      "std": 0.014561895043832792
+    },
+    "reward_lift_milestone": {
+      "mean": 10.0,
+      "std": 0.0
+    },
+    "reward_holding": {
+      "mean": 25.0,
+      "std": 0.0
+    },
+    "reward_failure_penalty": {
+      "mean": -19.366405406647182,
+      "std": 1.7949803358781293
+    },
+    "reward_success": {
+      "mean": 50.0,
+      "std": 0.0
+    }
+  },
+  "failure_modes": {}
+}

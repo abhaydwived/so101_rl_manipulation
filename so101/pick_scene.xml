@@ -13,14 +13,14 @@
         <geom group="3" condim="3"/>
       </default>
       <default class="collision_gripper">
-        <geom group="3" condim="6" friction="1.4 0.008 0.0008" solref="0.005 1" priority="1" mass="0"/>
+        <geom group="3" condim="6" friction="2.5 0.05 0.005" solref="0.005 1" priority="1" mass="0"/>
       </default>
     </default>
 
     <default class="sts3215">
       <geom contype="0" conaffinity="0"/>
       <joint damping="0.60" frictionloss="0.052" armature="0.028"/>
-      <position kp="250.0" kv="12.0" forcerange="-2.94 2.94"/>
+      <motor ctrlrange="-2.94 2.94" forcerange="-2.94 2.94"/>
     </default>
   </default>
 
@@ -54,7 +54,8 @@
 
   <worldbody>
     <light pos="0 0 2.5" dir="0 0 -1" directional="true" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
-    <geom name="floor" size="0 0 0.05" pos="0 0 0" type="plane" material="groundplane"/>
+    <!-- Floor lowered to the table underside so it no longer duplicates the table-top contact at z=0 -->
+    <geom name="floor" size="0 0 0.05" pos="0 0 -0.05" type="plane" material="groundplane"/>
 
     <!-- Work table under the robot and task area -->
     <body name="table" pos="0.25 0.0 -0.025">
@@ -64,15 +65,7 @@
     <!-- Randomized Target Zone Disc (Mocap marker on table surface z = 0.001) -->
     <body name="target_zone" pos="0.28 -0.15 0.001" mocap="true">
       <geom name="target_zone_geom" type="cylinder" size="0.04 0.001" material="target_zone_mat" contype="0" conaffinity="0"/>
-      <site name="target_center_site" pos="0 0 0.015" size="0.004" rgba="0 1 0 0.8"/>
-    </body>
-
-    <!-- Manipulable Cube: 3 cm edge (0.015m half-size), mass 35g -->
-    <body name="cube" pos="0.25 0.08 0.015">
-      <freejoint name="cube_joint"/>
-      <geom name="cube_geom" type="box" size="0.015 0.015 0.015" material="cube_mat" mass="0.035"
-        friction="1.5 0.008 0.0008" solref="0.005 1"/>
-      <site name="cube_center" pos="0 0 0" size="0.004" rgba="1 1 0 0.8"/>
+      <site name="target_center_site" pos="0 0 0.002" size="0.004" rgba="0 1 0 0.8"/>
     </body>
 
     <!-- Robot base attached to world -->
@@ -128,13 +121,13 @@
                   fullinertia="2.75087e-05 4.33657e-05 3.45059e-05 -3.35241e-07 -5.7352e-06 -5.17847e-08"/>
                 <geom type="mesh" class="visual" pos="0.0077 0.0001 -0.0234" quat="1 -1 0 0" mesh="sts3215_03a_v1" material="servo_black"/>
                 <geom type="mesh" class="visual" pos="0 -0.000218 0.00095" quat="0 1 0 0" mesh="wrist_roll_follower_so101_v1" material="arm_yellow"/>
-                
+
                 <geom name="fixed_jaw_base" class="collision_gripper" type="box" size="0.025 0.014 0.015" pos="-0.0025 0 -0.022"/>
                 <geom name="fixed_jaw_mid" class="collision_gripper" type="box" size="0.008 0.012 0.018" pos="-0.012 0 -0.06"/>
                 <geom name="fixed_jaw_tip" class="collision_gripper" type="box" size="0.006 0.010 0.015" pos="-0.008 0 -0.095"/>
-                
-                <site group="3" name="gripperframe" pos="0.0 -0.000218 -0.098127" quat="1 0 1 0"/>
-                <site group="3" name="ee_center" pos="-0.005 0.0 -0.095" size="0.005" rgba="1 0 0 0.8"/>
+
+                <site group="3" name="gripperframe" pos="0.0135 0.0 -0.097" quat="0 1 0 0"/>
+                <site group="3" name="ee_center" pos="0.0135 0.0 -0.097" quat="0 1 0 0" size="0.005" rgba="1 0 0 0.8"/>
 
                 <body name="moving_jaw_so101_v1" pos="0.0202 0.0188 -0.0234" quat="1 1 0 0">
                   <joint axis="0 0 1" name="gripper" type="hinge" range="-0.174533 1.7453292" class="sts3215"/>
@@ -151,6 +144,17 @@
         </body>
       </body>
     </body>
+
+    <!-- Manipulable cube. Nominal 2.5 cm edge (0.0125 half-size), 35 g; the env randomizes
+         size/mass/inertia/friction per reset. priority=2 (> jaw priority=1) makes MuJoCo use
+         THIS geom's friction/solref/condim for jaw-cube and table-cube contacts, so the
+         sampled cube friction actually takes effect. -->
+    <body name="cube" pos="0.25 0.08 0.0125">
+      <freejoint name="cube_joint"/>
+      <geom name="cube_geom" type="box" size="0.0125 0.0125 0.0125" material="cube_mat" mass="0.035"
+        condim="4" friction="1.0 0.05 0.005" solref="0.005 1" priority="2"/>
+      <site name="cube_center" pos="0 0 0" size="0.004" rgba="1 1 0 0.8"/>
+    </body>
   </worldbody>
 
   <contact>
@@ -163,11 +167,11 @@
   </contact>
 
   <actuator>
-    <position class="sts3215" name="shoulder_pan" joint="shoulder_pan" ctrlrange="-1.91986 1.91986"/>
-    <position class="sts3215" name="shoulder_lift" joint="shoulder_lift" ctrlrange="-1.74533 1.74533"/>
-    <position class="sts3215" name="elbow_flex" joint="elbow_flex" ctrlrange="-1.69 1.69"/>
-    <position class="sts3215" name="wrist_flex" joint="wrist_flex" ctrlrange="-1.65806 1.65806"/>
-    <position class="sts3215" name="wrist_roll" joint="wrist_roll" ctrlrange="-2.74385 2.84121"/>
-    <position class="sts3215" name="gripper" joint="gripper" ctrlrange="-0.17453 1.74533"/>
+    <motor class="sts3215" name="shoulder_pan" joint="shoulder_pan" ctrlrange="-2.94 2.94"/>
+    <motor class="sts3215" name="shoulder_lift" joint="shoulder_lift" ctrlrange="-2.94 2.94"/>
+    <motor class="sts3215" name="elbow_flex" joint="elbow_flex" ctrlrange="-2.94 2.94"/>
+    <motor class="sts3215" name="wrist_flex" joint="wrist_flex" ctrlrange="-2.94 2.94"/>
+    <motor class="sts3215" name="wrist_roll" joint="wrist_roll" ctrlrange="-2.94 2.94"/>
+    <motor class="sts3215" name="gripper" joint="gripper" ctrlrange="-2.94 2.94"/>
   </actuator>
 </mujoco>

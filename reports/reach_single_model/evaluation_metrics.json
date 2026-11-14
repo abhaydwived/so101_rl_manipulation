@@ -1,0 +1,35 @@
+{
+  "n_episodes": 2,
+  "overall_success_rate_percent": {
+    "mean": 0.0,
+    "std": 0.0
+  },
+  "euclidean_distance_error_mm": {
+    "mean": 165.4705109116889,
+    "std": 218.89558530576454
+  },
+  "time_to_reach_s": {
+    "mean": 14.0,
+    "std": 0.0
+  },
+  "action_smoothness": {
+    "mean": 0.3373289335831734,
+    "std": 0.35336292484637116
+  },
+  "episode_return": {
+    "mean": 386.26014672219753,
+    "std": 1501.9686166808244
+  },
+  "bottom_zone_success_percent": {
+    "mean": 0.0,
+    "std": 0.0
+  },
+  "medium_zone_success_percent": {
+    "mean": 0.0,
+    "std": 0.0
+  },
+  "high_zone_success_percent": {
+    "mean": 0.0,
+    "std": 0.0
+  }
+}

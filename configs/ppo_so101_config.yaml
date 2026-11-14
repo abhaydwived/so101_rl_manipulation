@@ -1,0 +1,94 @@
+# ==============================================================================
+# SO-101 MANIPULATOR: PPO HYPERPARAMETER SPECIFICATION & DESIGN JUSTIFICATION
+# Centralized Configuration: configs/ppo_so101_config.yaml
+# Assessment Track: Phase 9 Training Pipeline
+# ==============================================================================
+
+algorithm: "PPO"
+implementation: "Stable-Baselines3"
+device: "cpu"
+
+training:
+  total_timesteps: 1200000
+  n_envs: 8                    # Parallel SubprocVecEnv instances (8 workers)
+  seed: 42
+
+environment:
+  physics_frequency_hz: 500    # MuJoCo dt = 0.002 s
+  policy_frequency_hz: 25      # 20 physics substeps per action (dt = 0.040 s)
+  max_episode_steps: 300       # 12.0 seconds duration per episode (300 steps @ 25 Hz)
+  obs_dim: 36                  # SO101PickPlaceEnv (36-D state with tracking error & prev action)
+  action_dim: 6                # 5 arm joint position deltas + 1 gripper command
+  max_arm_delta: 0.025         # rad/step (~1.4 deg/step, bounded velocity)
+
+hyperparameters:
+  # 1. Learning Rate
+  learning_rate: 3.0e-4
+  lr_schedule: "linear_decay"
+  # Justification: 3e-4 with Adam optimizer is optimal for continuous MuJoCo control.
+  # Decays linearly to 5e-5 towards the end of training to facilitate convergence in precision placement.
+
+  # 2. Rollout Buffer (n_steps)
+  n_steps: 1024
+  # Justification: 8 parallel envs * 1024 steps = 8,192 transitions per PPO update epoch.
+  # Provides an adequate sample window to observe full pick-and-place trajectories (~200 steps).
+
+  # 3. Minibatch Size
+  batch_size: 256
+  # Justification: 8,192 buffer / 256 batch_size = 32 mini-batch updates per epoch.
+  # Balances stochastic gradient descent variance reduction and GPU/CPU cache efficiency.
+
+  # 4. Number of Optimization Epochs
+  n_epochs: 10
+  # Justification: Standard PPO value allowing sufficient surrogate policy reuse without policy drift.
+
+  # 5. Discount Factor (Gamma)
+  gamma: 0.99
+  # Justification: At 25 Hz, an effective horizon of 1 / (1 - 0.99) = 100 steps (~4 seconds),
+  # covering the temporal horizon between initial grasp and target zone release.
+
+  # 6. Generalized Advantage Estimation (GAE Lambda)
+  gae_lambda: 0.95
+  # Justification: Low-bias, controlled-variance advantage estimator matching continuous robotics baselines.
+
+  # 7. Surrogate Objective Clipping (Clip Range)
+  clip_range: 0.20
+  # Justification: Standard trusted trust-region constraint, bounding policy updates to [-20%, +20%].
+
+  # 8. Entropy Coefficient (ent_coef)
+  ent_coef: 0.005
+  # Justification: Small positive entropy bonus prevents premature convergence of the 6-DOF continuous
+  # Gaussian policy heads to narrow deterministic actions early in the exploration phase.
+
+  # 9. Value Function Loss Coefficient (vf_coef)
+  vf_coef: 0.50
+  # Justification: Standard balanced weighting between actor policy gradient and critic value estimation.
+
+  # 10. Maximum Gradient Norm (max_grad_norm)
+  max_grad_norm: 0.50
+  # Justification: Crucial gradient clipping to stabilize updates against occasional contact impulse spikes.
+
+  # 11. Policy & Value Network Architecture
+  policy_kwargs:
+    net_arch:
+      pi: [256, 256]
+      vf: [256, 256]
+    activation_fn: "Tanh"
+  # Justification: Two hidden layers of 256 units with Tanh activations provide smooth continuous function
+  # approximation without overfitting. Decoupled actor and critic heads prevent feature interference.
+
+normalization:
+  norm_obs: true
+  clip_obs: 10.0
+  norm_reward: true
+  clip_reward: 10.0
+  # Justification: VecNormalize maintains running Gaussian statistics of observation and return,
+  # keeping network gradients stationary across multi-phase rewards.
+
+logging:
+  backend: "tensorboard"
+  log_interval: 1
+  checkpoint_freq_steps: 100000
+  eval_freq_steps: 15000
+  eval_episodes: 20
+

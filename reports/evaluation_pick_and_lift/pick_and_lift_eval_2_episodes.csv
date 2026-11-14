@@ -1,0 +1,3 @@
+episode,seed,cube_place_x,cube_place_y,cube_place_z,cube_place_yaw_deg,success,lift_target_achieved,has_grasped,max_lift_height_cm,hold_duration_s,consec_hold_steps,action_smoothness,steps,return,failure_reason,reward_reaching,reward_grasp,reward_lift_progress,reward_lift_milestone,reward_holding,reward_failure_penalty,reward_success,cube_half_size_mm
+1,50000,0.2531,-0.0852,0.012,20.18,True,True,True,8.856246216685316,1.0,25,0.13325977545813658,50,72.67446126136929,,1.0917907429683453,6.0,1.218319905424588,10.0,25.0,-20.635648174243116,50.0,11.965983364323428
+2,50001,0.2966,0.0616,0.0123,-179.03,True,True,True,8.272729162657171,1.0,25,0.15929412336513532,57,75.30831817479338,,1.207752535740261,6.0,1.197726275959746,10.0,25.0,-18.097162639051252,50.0,12.265422577692982

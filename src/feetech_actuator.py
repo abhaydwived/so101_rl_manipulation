@@ -60,18 +60,19 @@ class FeetechSTS3215ActuatorGroup:
 
         # 1. First-order servo response / command lag
         alpha = self.dt / (self.time_constant + self.dt)
-        self.internal_target += alpha * (commanded - self.internal_target)
+        filtered_cmd = self.internal_target + alpha * (commanded - self.internal_target)
 
-        # 2. Rate limiting (velocity clamp)
+        # 2. Rate limiting (velocity clamp on target trajectory)
         max_delta = self.max_velocity * self.dt
-        delta = np.clip(self.internal_target - current_q, -max_delta, max_delta)
-        tracked_target = current_q + delta
+        delta = np.clip(filtered_cmd - self.internal_target, -max_delta, max_delta)
+        self.internal_target += delta
 
         # 3. Internal PD position loop
-        err = tracked_target - current_q
+        err = self.internal_target - current_q
         torques = self.kp * err - self.kv * current_v
 
         # 4. Physical torque saturation
         clipped_torques = np.clip(torques, -self.max_torque, self.max_torque)
 
-        return clipped_torques, tracked_target
+        return clipped_torques, self.internal_target.copy()
+

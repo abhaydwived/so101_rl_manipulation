@@ -1,0 +1,19 @@
+{
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "total_timesteps": 909312,
+  "timesteps_per_seed": 300000,
+  "n_envs": 4,
+  "seed_milestones": [
+    303104,
+    606208,
+    909312
+  ],
+  "observation_dim": 21,
+  "action_dim": 5,
+  "final_model_path": "models/so101/reach\\reach_model.zip",
+  "vecnormalize_path": "models/so101/reach\\vecnormalize.pkl"
+}

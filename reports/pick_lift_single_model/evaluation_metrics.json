@@ -1,0 +1,59 @@
+{
+  "n_episodes": 2,
+  "success_rate_percent": {
+    "mean": 100.0,
+    "std": 0.0
+  },
+  "lift_target_rate_percent": {
+    "mean": 100.0,
+    "std": 0.0
+  },
+  "grasp_rate_percent": {
+    "mean": 100.0,
+    "std": 0.0
+  },
+  "lift_height_cm": {
+    "mean": 8.154364432303382,
+    "std": 0.03097828536497772
+  },
+  "hold_duration_s": {
+    "mean": 1.0,
+    "std": 0.0
+  },
+  "episode_return": {
+    "mean": 75.22454982064664,
+    "std": 1.8216308769272935
+  },
+  "cube_target_error_mm": {
+    "mean": 0.0,
+    "std": 0.0
+  },
+  "reward_reaching": {
+    "mean": 1.1305485447396613,
+    "std": 0.008124755057914724
+  },
+  "reward_grasp": {
+    "mean": 6.0,
+    "std": 0.0
+  },
+  "reward_lift_progress": {
+    "mean": 1.2119986806903889,
+    "std": 0.0026869762660357423
+  },
+  "reward_lift_milestone": {
+    "mean": 10.0,
+    "std": 0.0
+  },
+  "reward_holding": {
+    "mean": 25.0,
+    "std": 0.0
+  },
+  "reward_failure_penalty": {
+    "mean": -18.117997844961064,
+    "std": 1.8108201207699872
+  },
+  "reward_success": {
+    "mean": 50.0,
+    "std": 0.0
+  }
+}

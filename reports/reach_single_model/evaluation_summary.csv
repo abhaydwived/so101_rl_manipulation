@@ -1,0 +1,9 @@
+Metric,Mean,Std,Unit
+Overall Success Rate,0.0,0.0,%
+Euclidean Distance Error,165.4705109116889,218.89558530576454,mm
+Time to Reach,14.0,0.0,s
+Action Smoothness,0.3373289335831734,0.35336292484637116,delta
+Episode Return,386.26014672219753,1501.9686166808244,reward
+Bottom Zone Success,0.0,0.0,%
+Medium Zone Success,0.0,0.0,%
+High Zone Success,0.0,0.0,%

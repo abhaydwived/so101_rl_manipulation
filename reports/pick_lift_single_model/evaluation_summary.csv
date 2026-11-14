@@ -1,0 +1,15 @@
+Metric,Mean,Std,Unit
+Success Rate,100.0,0.0,%
+Lift Target Rate,100.0,0.0,%
+Grasp Rate,100.0,0.0,%
+Lift Height,8.154364432303382,0.03097828536497772,cm
+Hold Duration,1.0,0.0,s
+Cube Target Error,0.0,0.0,mm
+Episode Return,75.22454982064664,1.8216308769272935,reward
+Reward Reaching,1.1305485447396613,0.008124755057914724,reward
+Reward Grasp,6.0,0.0,reward
+Reward Lift Progress,1.2119986806903889,0.0026869762660357423,reward
+Reward Lift Milestone,10.0,0.0,reward
+Reward Holding,25.0,0.0,reward
+Reward Penalties,-18.117997844961064,1.8108201207699872,reward
+Reward Success Bonus,50.0,0.0,reward

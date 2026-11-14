@@ -24,6 +24,7 @@ The system implements high-fidelity physical actuator modeling in [MuJoCo](https
 - [Diagnostic & Stability Verification Suite](#diagnostic--stability-verification-suite)
 - [Sim-to-Real Transfer & Engineering Insights](#sim-to-real-transfer--engineering-insights)
 - [Installation & Quickstart](#installation--quickstart)
+- [Reproducibility Guide (REPRODUCE.md)](REPRODUCE.md)
 - [Testing & Quality Assurance](#testing--quality-assurance)
 
 ---
@@ -55,7 +56,7 @@ d:\Robotic Arm Pick and Place\
 │   ├── train_reach.py             # Reaching policy trainer with sequential multi-seed curriculum
 │   └── train_pick_and_lift.py     # Pick-and-lift trainer with observation adaptation & TensorBoard tracking
 │
-├── Evaluate and test/             # Standardized held-out benchmarking & visualization
+├── Evaluate_and_test/             # Standardized held-out benchmarking & visualization
 │   ├── evaluate_reach.py          # 500-target multi-zone precision reaching benchmark & distribution plots
 │   └── evaluate_pick_and_lift.py  # 200-episode held-out evaluation with cube randomization & CSV export
 │
@@ -287,18 +288,18 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Reproduce Evaluation Benchmarks
+### Full Benchmark & Live Visualization Suites
 
 ```bash
 # Evaluate 3-Zone Goal-Conditioned Precision Reaching (500 targets)
-python "Evaluate and test/evaluate_reach.py" --n-targets 500
+python Evaluate_and_test/evaluate_reach.py --episodes 500
 
 # Evaluate Contact-Rich Pick-and-Lift with Random Cube Placement (200 episodes)
-python "Evaluate and test/evaluate_pick_and_lift.py" --n-episodes 200 --randomize-cube-place
+python Evaluate_and_test/evaluate_pick_and_lift.py --episodes 200 --randomize-cube-place
 
 # Interactive Live Visualization (Paced to 1.0x Real-Time Speed)
-python "Evaluate and test/evaluate_reach.py" --render --speed 1.0 --n-targets 10
-python "Evaluate and test/evaluate_pick_and_lift.py" --render --speed 1.0 --n-episodes 5
+python Evaluate_and_test/evaluate_reach.py --render --speed 1.0 --episodes 10 
+python Evaluate_and_test/evaluate_pick_and_lift.py --render --speed 1.0 --episodes 10 --randomize-cube-place
 ```
 
 ### Train Policies from Scratch

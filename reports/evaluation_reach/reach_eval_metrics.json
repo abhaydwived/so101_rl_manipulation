@@ -1,88 +1,50 @@
 {
   "benchmark": "SO-101 Precision Reaching Held-Out Evaluation",
-  "n_targets": 10,
+  "n_targets": 2,
   "base_seed": 2026,
-  "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\reach\\best_model.zip",
+  "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\reach\\reach_model.zip",
   "vecnorm_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\reach\\vecnormalize.pkl",
-  "total_eval_wall_time_s": 43.68270397186279,
+  "total_eval_wall_time_s": 0.7963132858276367,
   "overall": {
     "success_rate_percent": {
-      "mean": 100.0,
-      "std": 0.0
+      "mean": 50.0,
+      "std": 70.71067811865476
     },
     "final_err_mm": {
-      "mean": 7.455176288138347,
-      "std": 2.3471330343986225
+      "mean": 8.480723573444589,
+      "std": 0.22323430583103698
     },
     "time_to_reach_s": {
-      "mean": 2.12,
-      "std": 1.0128068807910904
+      "mean": 7.36,
+      "std": 0.0
     },
     "action_smoothness": {
-      "mean": 0.18703747531426798,
-      "std": 0.008736795705337563
+      "mean": 0.24059634489094062,
+      "std": 0.001467811520618032
     },
     "episodic_return": {
-      "mean": 968.084627892985,
-      "std": 490.61732321607155
+      "mean": 5033.397797599435,
+      "std": 2092.2979501287905
     }
   },
   "zones": {
     "bottom": {
-      "n_targets": 5,
+      "n_targets": 2,
       "success_rate_percent": {
-        "mean": 100.0,
-        "std": 0.0
+        "mean": 50.0,
+        "std": 70.71067811865476
       },
       "final_err_mm": {
-        "mean": 8.455674248242193,
-        "std": 1.027633015554395
+        "mean": 8.480723573444589,
+        "std": 0.22323430583103698
       },
       "time_to_reach_s": {
-        "mean": 2.4,
-        "std": 1.335365118609888
-      },
-      "action_smoothness": {
-        "mean": 0.18478074776215175,
-        "std": 0.009166433495027049
-      }
-    },
-    "medium": {
-      "n_targets": 4,
-      "success_rate_percent": {
-        "mean": 100.0,
-        "std": 0.0
-      },
-      "final_err_mm": {
-        "mean": 6.4597844679035985,
-        "std": 3.4325257822217474
-      },
-      "time_to_reach_s": {
-        "mean": 1.8800000000000001,
-        "std": 0.6540132516496385
-      },
-      "action_smoothness": {
-        "mean": 0.1903990358682973,
-        "std": 0.009583824375983695
-      }
-    },
-    "high": {
-      "n_targets": 1,
-      "success_rate_percent": {
-        "mean": 100.0,
-        "std": 0.0
-      },
-      "final_err_mm": {
-        "mean": 6.434253768558105,
-        "std": 0.0
-      },
-      "time_to_reach_s": {
-        "mean": 1.68,
+        "mean": 7.36,
         "std": 0.0
       },
       "action_smoothness": {
-        "mean": 0.18487487085873172,
-        "std": 0.0
+        "mean": 0.24059634489094062,
+        "std": 0.001467811520618032
       }
     }
   }

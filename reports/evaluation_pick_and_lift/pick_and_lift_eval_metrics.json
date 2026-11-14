@@ -4,7 +4,7 @@
   "base_seed": 50000,
   "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\pick_lift_model.zip",
   "vecnorm_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\vecnormalize.pkl",
-  "total_eval_wall_time_s": 0.263535737991333,
+  "total_eval_wall_time_s": 0.19484162330627441,
   "cube_placement": {
     "randomized": true,
     "x": {

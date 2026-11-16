@@ -33,13 +33,11 @@ The system implements high-fidelity physical actuator modeling in [MuJoCo](https
 
 Full rollout recordings rendered at real-time 25 Hz policy execution speed:
 
-| Task | Demonstration Video | Description |
-|:---|:---:|:---|
-| **Precision Reaching (B1)** | [▶ Watch Reaching Demo](reports/videos/reaching_target.mp4) | Fast, vibration-free convergence across 3 height zones with $\le 10$ mm error hold. |
-| **Pick-and-Lift (B2)** | [▶ Watch Pick-and-Lift Demo](reports/videos/Pick_and_lift.mp4) | Bilateral contact grasp, smooth lift to $8.56$ cm, and 1.0 s steady hold under cube randomization. |
-| **Ablation Study** | [▶ Watch Ablation Study](reports/videos/Ablation.mp4) | Removed the Reaching reward term from reward function. |
-| **Failure Analysis (B1)** | [▶ Watch Failure Case (Reach Shaping)](reports/videos/Failure_reach.mp4) | Reward ablation demonstrating arm wandering when reaching gradient is unshaped. |
-| **Failure Analysis (B2)** | [▶ Watch Failure Case (Pick-and-Lift)](reports/videos/failure_pick_lift_1.mp4) | Grasp slip and premature release under extreme friction and torque perturbation. |
+| Benchmark Demonstration | Benchmark Demonstration |
+|:---:|:---:|
+| **Part B1: Precision Reaching**<br><br>![Precision Reaching](reports/videos/reaching_target.gif)<br><br>*Fast, vibration-free convergence across 3 height zones with $\le 10$ mm error hold.* | **Part B2: Pick-and-Lift**<br><br>![Pick-and-Lift](reports/videos/Pick_and_lift.gif)<br><br>*Bilateral contact grasp, smooth lift to 8.56 cm, and 1.0 s steady hold under cube randomization.* |
+| **Ablation Study (Reward Shaping)**<br><br>![Ablation Study](reports/videos/Ablation.gif)<br><br>*Removed reaching potential shaping from pick-and-lift reward function, leading to contact exploration failure.* | **Failure Analysis (B1 Reaching)**<br><br>![Failure Case B1](reports/videos/Failure_reach.gif)<br><br>*Arm wandering and failure to discover target when reaching gradient is unshaped.* |
+| **Failure Analysis (B2 Grasp Slip)**<br><br>![Failure Case B2 - Grasp Slip](reports/videos/failure_pick_lift_1.gif)<br><br>*Grasp slippage under low surface friction and yaw misalignment during lift.* | **Failure Analysis (B2 Dynamic Bounce)**<br><br>![Failure Case B2 - Bounce](reports/videos/Failure_pick_lift_2.gif)<br><br>*Vertical bounce exceeding contact grace window resulting in premature drop penalty.* |
 
 ---
 

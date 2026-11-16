@@ -1,90 +1,92 @@
 {
   "benchmark": "SO-101 Pick-and-Lift Held-Out Deterministic Evaluation",
-  "n_episodes": 2,
+  "n_episodes": 200,
   "base_seed": 50000,
   "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\pick_lift_model.zip",
   "vecnorm_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\pick_lift\\vecnormalize.pkl",
-  "total_eval_wall_time_s": 0.19484162330627441,
+  "total_eval_wall_time_s": 24.406529664993286,
   "cube_placement": {
     "randomized": true,
     "x": {
-      "mean": 0.27485,
-      "std": 0.030759144981614805,
-      "min": 0.2531,
-      "max": 0.2966
+      "mean": 0.270576,
+      "std": 0.016742787361822883,
+      "min": 0.2401,
+      "max": 0.2992
     },
     "y": {
-      "mean": -0.011799999999999998,
-      "std": 0.10380327547818516,
-      "min": -0.0852,
-      "max": 0.0616
+      "mean": 0.0057275,
+      "std": 0.05253234938980038,
+      "min": -0.0853,
+      "max": 0.0895
     },
     "yaw_deg": {
-      "mean": -79.425,
-      "std": 140.86274188017214,
-      "min": -179.03,
-      "max": 20.18
+      "mean": -1.842349999999999,
+      "std": 105.18456238822077,
+      "min": -179.69,
+      "max": 178.45
     }
   },
   "metrics": {
     "success_rate_percent": {
-      "mean": 100.0,
-      "std": 0.0
+      "mean": 95.5,
+      "std": 20.78243363368914
     },
     "lift_target_rate_percent": {
-      "mean": 100.0,
-      "std": 0.0
+      "mean": 99.5,
+      "std": 7.0710678118654755
     },
     "grasp_rate_percent": {
-      "mean": 100.0,
-      "std": 0.0
+      "mean": 99.5,
+      "std": 7.071067811865478
     },
     "max_lift_height_cm": {
-      "mean": 8.564487689671243,
-      "std": 0.4126088658412978
+      "mean": 8.893513425127527,
+      "std": 0.9676978669722417
     },
     "max_hold_duration_s": {
-      "mean": 1.0,
-      "std": 0.0
+      "mean": 0.9706,
+      "std": 0.14790884059321183
     },
     "action_smoothness": {
-      "mean": 0.14627694941163594,
-      "std": 0.018409063948808608
+      "mean": 0.14486772778426396,
+      "std": 0.027126880717559226
     },
     "episodic_return": {
-      "mean": 73.99138971808134,
-      "std": 1.8624180841572484
+      "mean": 67.111734329301,
+      "std": 13.040439017484436
     }
   },
   "decomposed_rewards": {
     "reward_reaching": {
-      "mean": 1.1497716393543032,
-      "std": 0.08199737002757072
+      "mean": 0.989758441855734,
+      "std": 0.14526527580384047
     },
     "reward_grasp": {
-      "mean": 6.0,
-      "std": 0.0
+      "mean": 5.97,
+      "std": 0.4242640687119286
     },
     "reward_lift_progress": {
-      "mean": 1.208023090692167,
-      "std": 0.014561895043832792
+      "mean": 1.2042975252825103,
+      "std": 0.08651735684916077
     },
     "reward_lift_milestone": {
-      "mean": 10.0,
-      "std": 0.0
+      "mean": 9.95,
+      "std": 0.7071067811865475
     },
     "reward_holding": {
-      "mean": 25.0,
-      "std": 0.0
+      "mean": 24.265,
+      "std": 3.6977210148302952
     },
     "reward_failure_penalty": {
-      "mean": -19.366405406647182,
-      "std": 1.7949803358781293
+      "mean": -23.017321654770704,
+      "std": 4.359065186462237
     },
     "reward_success": {
-      "mean": 50.0,
-      "std": 0.0
+      "mean": 47.75,
+      "std": 10.391216816844569
     }
   },
-  "failure_modes": {}
+  "failure_modes": {
+    "timeout_no_touch": 9
+  }
 }

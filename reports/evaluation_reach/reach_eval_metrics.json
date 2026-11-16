@@ -1,50 +1,88 @@
 {
   "benchmark": "SO-101 Precision Reaching Held-Out Evaluation",
-  "n_targets": 2,
+  "n_targets": 500,
   "base_seed": 2026,
   "model_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\reach\\reach_model.zip",
   "vecnorm_path": "D:\\Robotic Arm Pick and Place\\models\\so101\\reach\\vecnormalize.pkl",
-  "total_eval_wall_time_s": 0.7963132858276367,
+  "total_eval_wall_time_s": 70.53927159309387,
   "overall": {
     "success_rate_percent": {
-      "mean": 50.0,
-      "std": 70.71067811865476
+      "mean": 99.6,
+      "std": 6.318214912406725
     },
     "final_err_mm": {
-      "mean": 8.480723573444589,
-      "std": 0.22323430583103698
+      "mean": 7.898071320238638,
+      "std": 2.2509938919899377
     },
     "time_to_reach_s": {
-      "mean": 7.36,
-      "std": 0.0
+      "mean": 3.033253012048193,
+      "std": 2.6093987875439004
     },
     "action_smoothness": {
-      "mean": 0.24059634489094062,
-      "std": 0.001467811520618032
+      "mean": 0.23710933085588481,
+      "std": 0.024329432735537636
     },
     "episodic_return": {
-      "mean": 5033.397797599435,
-      "std": 2092.2979501287905
+      "mean": 1333.3945541018472,
+      "std": 1247.4371149107485
     }
   },
   "zones": {
     "bottom": {
-      "n_targets": 2,
+      "n_targets": 156,
       "success_rate_percent": {
-        "mean": 50.0,
-        "std": 70.71067811865476
+        "mean": 98.71794871794873,
+        "std": 11.286186173625715
       },
       "final_err_mm": {
-        "mean": 8.480723573444589,
-        "std": 0.22323430583103698
+        "mean": 8.52771830089012,
+        "std": 2.300168459695799
       },
       "time_to_reach_s": {
-        "mean": 7.36,
-        "std": 0.0
+        "mean": 5.087532467532467,
+        "std": 3.3499593816069018
       },
       "action_smoothness": {
-        "mean": 0.24059634489094062,
-        "std": 0.001467811520618032
+        "mean": 0.22976296187467576,
+        "std": 0.020584428893383147
+      }
+    },
+    "medium": {
+      "n_targets": 172,
+      "success_rate_percent": {
+        "mean": 100.0,
+        "std": 0.0
+      },
+      "final_err_mm": {
+        "mean": 7.5367041007580236,
+        "std": 2.450470393378867
+      },
+      "time_to_reach_s": {
+        "mean": 2.432790697674419,
+        "std": 1.954670909716794
+      },
+      "action_smoothness": {
+        "mean": 0.24414450511307476,
+        "std": 0.025307019621067628
+      }
+    },
+    "high": {
+      "n_targets": 172,
+      "success_rate_percent": {
+        "mean": 100.0,
+        "std": 0.0
+      },
+      "final_err_mm": {
+        "mean": 7.688363371221396,
+        "std": 1.8569546784887687
+      },
+      "time_to_reach_s": {
+        "mean": 1.7944186046511628,
+        "std": 0.47035784473949527
+      },
+      "action_smoothness": {
+        "mean": 0.2367371424188612,
+        "std": 0.024568827589336845
       }
     }
   }

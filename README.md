@@ -331,19 +331,7 @@ Diagnose/test_kinematics.py .................                            [ 76%]
 Diagnose/test_model_loading.py .............                             [100%]
 ======================== 56 passed, 28 skipped in 8.42s ========================
 ```
-
 ---
-
-## Citation & References
-
-```bibtex
-@software{so101_manipulator_rl_2026,
-  author = {Abhay and Engineering Team},
-  title = {SO-101 Manipulator Reinforcement Learning Pipeline in MuJoCo},
-  year = {2026},
-  url = {https://github.com/your-username/so101-robotic-arm-rl}
-}
-```
 
 - [SO-ARM100 / SO-101 Hardware Repository](https://github.com/TheRobotStudio/SO-ARM100)
 - [MuJoCo: Multi-Joint dynamics with Contact](https://mujoco.org/)

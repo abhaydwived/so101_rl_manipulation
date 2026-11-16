@@ -36,8 +36,8 @@ Full rollout recordings rendered at real-time 25 Hz policy execution speed:
 | Benchmark Demonstration | Benchmark Demonstration |
 |:---:|:---:|
 | **Part B1: Precision Reaching**<br><br>![Precision Reaching](reports/videos/reaching_target.gif)<br><br>*Fast, vibration-free convergence across 3 height zones with ≤ 10 mm error hold.* | **Part B2: Pick-and-Lift**<br><br>![Pick-and-Lift](reports/videos/Pick_and_lift.gif)<br><br>*Bilateral contact grasp, smooth lift to 8.56 cm, and 1.0 s steady hold under cube randomization.* |
-| **Ablation Study (Reward Shaping)**<br><br>![Ablation Study](reports/videos/Ablation.gif)<br><br>*Removed reaching potential shaping from pick-and-lift reward function, leading to contact exploration failure.* | **Failure Analysis (B1 Reaching)**<br><br>![Failure Case B1](reports/videos/Failure_reach.gif)<br><br>*Arm wandering and failure to discover target when reaching gradient is unshaped.* |
-| **Failure Analysis (B2 Grasp Slip)**<br><br>![Failure Case B2 - Grasp Slip](reports/videos/failure_pick_lift_1.gif)<br><br>*Grasp slippage under low surface friction and yaw misalignment during lift.* | **Failure Analysis (B2 Dynamic Bounce)**<br><br>![Failure Case B2 - Bounce](reports/videos/Failure_pick_lift_2.gif)<br><br>*Vertical bounce exceeding contact grace window resulting in premature drop penalty.* |
+| **Ablation Study (Reward Shaping)**<br><br>![Ablation Study](reports/videos/Ablation.gif)<br><br>*Removed reaching potential shaping from pick-and-lift reward function, leading to contact exploration failure.* | **Failure Case(B1 Reaching)**<br><br>![Failure Case B1](reports/videos/Failure_reach.gif)<br><br>*Arm wandering and failure to discover target when reaching gradient is unshaped.* |
+| **Failure Case(B2 Grasp Slip)**<br><br>![Failure Case B2 - Grasp Slip](reports/videos/failure_pick_lift_1.gif)<br><br>*Grasp slippage under low surface friction and yaw misalignment during lift.* | **Failure Case(B2 Dynamic Bounce)**<br><br>![Failure Case B2 - Bounce](reports/videos/Failure_pick_lift_2.gif)<br><br>*Vertical bounce exceeding contact grace window resulting in premature drop penalty.* |
 
 ---
 

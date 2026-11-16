@@ -11,7 +11,7 @@ A production-grade, modular Reinforcement Learning framework developed for the *
 
 The system implements high-fidelity physical actuator modeling in [MuJoCo](https://mujoco.org/), robust gymnasium environments with contact dynamics, and Proximal Policy Optimization ([PPO](https://stable-baselines3.readthedocs.io/)) to solve two core robotic manipulation benchmarks:
 1. **Goal-Conditioned 3-Zone Precision Reaching (Part B1)** — 100.0% success rate, sub-10 mm accuracy, 0.5 s steady hold.
-2. **Contact-Rich Pick-and-Lift (Part B2)** — 100.0% success rate, bilateral grasp confirmation, $\ge 5$ cm elevation, and 1.0 s steady hold under dynamic cube placement and domain randomization.
+2. **Contact-Rich Pick-and-Lift (Part B2)** — 95.50% success rate, 99.50% bilateral grasp confirmation, 8.89 cm elevation, and 0.97 s steady hold under dynamic cube placement and domain randomization.
 
 ---
 
@@ -35,7 +35,7 @@ Full rollout recordings rendered at real-time 25 Hz policy execution speed:
 
 | Benchmark Demonstration | Benchmark Demonstration |
 |:---:|:---:|
-| **Part B1: Precision Reaching**<br><br>![Precision Reaching](reports/videos/reaching_target.gif)<br><br>*Fast, vibration-free convergence across 3 height zones with $\le 10$ mm error hold.* | **Part B2: Pick-and-Lift**<br><br>![Pick-and-Lift](reports/videos/Pick_and_lift.gif)<br><br>*Bilateral contact grasp, smooth lift to 8.56 cm, and 1.0 s steady hold under cube randomization.* |
+| **Part B1: Precision Reaching**<br><br>![Precision Reaching](reports/videos/reaching_target.gif)<br><br>*Fast, vibration-free convergence across 3 height zones with ≤ 10 mm error hold.* | **Part B2: Pick-and-Lift**<br><br>![Pick-and-Lift](reports/videos/Pick_and_lift.gif)<br><br>*Bilateral contact grasp, smooth lift to 8.56 cm, and 1.0 s steady hold under cube randomization.* |
 | **Ablation Study (Reward Shaping)**<br><br>![Ablation Study](reports/videos/Ablation.gif)<br><br>*Removed reaching potential shaping from pick-and-lift reward function, leading to contact exploration failure.* | **Failure Analysis (B1 Reaching)**<br><br>![Failure Case B1](reports/videos/Failure_reach.gif)<br><br>*Arm wandering and failure to discover target when reaching gradient is unshaped.* |
 | **Failure Analysis (B2 Grasp Slip)**<br><br>![Failure Case B2 - Grasp Slip](reports/videos/failure_pick_lift_1.gif)<br><br>*Grasp slippage under low surface friction and yaw misalignment during lift.* | **Failure Analysis (B2 Dynamic Bounce)**<br><br>![Failure Case B2 - Bounce](reports/videos/Failure_pick_lift_2.gif)<br><br>*Vertical bounce exceeding contact grace window resulting in premature drop penalty.* |
 
@@ -195,29 +195,29 @@ Evaluated deterministically across 200 unseen randomized episodes with dynamic c
 
 | Benchmark Metric | Mean | Standard Deviation | Benchmark Target | Unit |
 |:---|:---:|:---:|:---:|:---:|
-| **Overall Task Success Rate** | **100.0%** | $\pm 0.0\%$ | $\ge 90.0\%$ | $\%$ |
-| **Lift Target Attainment Rate ($\ge 5\text{ cm}$)** | **100.0%** | $\pm 0.0\%$ | $\ge 90.0\%$ | $\%$ |
-| **Bilateral Grasp Confirmation Rate** | **100.0%** | $\pm 0.0\%$ | $\ge 95.0\%$ | $\%$ |
-| **Max Lift Height Gain** | **8.56** | $\pm 0.41$ | $\ge 5.0$ | $\text{cm}$ |
-| **Max Steady Hold Duration** | **1.00** | $\pm 0.00$ | $\ge 1.0$ | $\text{s}$ |
-| **Action Smoothness ($\frac{1}{T}\sum\|\Delta a\|$)** | **0.146** | $\pm 0.018$ | Unjittered | $\text{delta}$ |
-| **Episodic Return** | **73.99** | $\pm 1.86$ | Positive | $\text{reward}$ |
-| **Cube Initial X Placement** | **0.275** | $\pm 0.031$ | $[0.24, 0.30]$ | $\text{m}$ |
-| **Cube Initial Y Placement** | **-0.012** | $\pm 0.104$ | $[-0.09, 0.09]$ | $\text{m}$ |
-| **Cube Initial Yaw Orientation** | **-79.4** | $\pm 140.9$ | $[-180^\circ, +180^\circ]$ | $\text{deg}$ |
+| **Overall Task Success Rate** | **95.50%** | $\pm 20.78\%$ | $\ge 90.0\%$ | $\%$ |
+| **Lift Target Attainment Rate ($\ge 5\text{ cm}$)** | **99.50%** | $\pm 7.07\%$ | $\ge 90.0\%$ | $\%$ |
+| **Bilateral Grasp Confirmation Rate** | **99.50%** | $\pm 7.07\%$ | $\ge 95.0\%$ | $\%$ |
+| **Max Lift Height Gain** | **8.89** | $\pm 0.97$ | $\ge 5.0$ | $\text{cm}$ |
+| **Max Steady Hold Duration** | **0.97** | $\pm 0.15$ | $\ge 1.0$ | $\text{s}$ |
+| **Action Smoothness ($\frac{1}{T}\sum\|\Delta a\|$)** | **0.1449** | $\pm 0.0271$ | Unjittered | $\text{delta}$ |
+| **Episodic Return** | **67.11** | $\pm 13.04$ | Positive | $\text{reward}$ |
+| **Cube Initial X Placement** | **0.271** | $\pm 0.017$ | $[0.24, 0.30]$ | $\text{m}$ |
+| **Cube Initial Y Placement** | **0.006** | $\pm 0.053$ | $[-0.09, 0.09]$ | $\text{m}$ |
+| **Cube Initial Yaw Orientation** | **-1.8** | $\pm 105.2$ | $[-180^\circ, +180^\circ]$ | $\text{deg}$ |
 
 ### Decomposed Reward Accounting
 All reward components are bounded and mathematically sum to the episodic return:
 
 | Component | Mean Contribution | Reward Function Role |
 |:---|:---:|:---|
-| `reward_reaching` | $+1.15 \pm 0.08$ | Dense potential progress guiding EE toward cube centroid. |
-| `reward_grasp` | $+6.00 \pm 0.00$ | Event milestone reward upon verified bilateral jaw contact. |
-| `reward_lift_progress`| $+1.21 \pm 0.01$ | Height increment reward capped at target elevation ($0.060\text{ m}$). |
-| `reward_lift_milestone`| $+10.00 \pm 0.00$ | One-time bonus when cube bottom clears $5\text{ cm}$ above table. |
-| `reward_holding` | $+25.00 \pm 0.00$ | Sustained holding bonus ($1.0/\text{step} \times 25\text{ steps}$). |
-| `reward_failure_penalty`| $-19.37 \pm 1.79$| Regularization against premature drops and excessive action rates. |
-| `reward_success` | $+50.00 \pm 0.00$ | Terminal milestone upon completing full 1.0 s steady hold. |
+| `reward_reaching` | $+0.99 \pm 0.15$ | Dense potential progress guiding EE toward cube centroid. |
+| `reward_grasp` | $+5.97 \pm 0.42$ | Event milestone reward upon verified bilateral jaw contact. |
+| `reward_lift_progress`| $+1.20 \pm 0.09$ | Height increment reward capped at target elevation ($0.060\text{ m}$). |
+| `reward_lift_milestone`| $+9.95 \pm 0.71$ | One-time bonus when cube bottom clears $5\text{ cm}$ above table. |
+| `reward_holding` | $+24.27 \pm 3.70$ | Sustained holding bonus ($1.0/\text{step} \times 25\text{ steps}$). |
+| `reward_failure_penalty`| $-23.02 \pm 4.36$| Regularization against premature drops and excessive action rates. |
+| `reward_success` | $+47.75 \pm 10.39$| Terminal milestone upon completing full 1.0 s steady hold. |
 
 ### Pick-and-Lift Learning Curves & Evaluation Distributions
 
